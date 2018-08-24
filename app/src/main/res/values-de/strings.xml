@@ -289,9 +289,11 @@
     <string name="restart_emoji">Du musst Tusky neustarten um die Änderungen anzuwenden</string>
     <string name="later">Später</string>
     <string name="restart">Neustarten</string>
+
     <string name="caption_systememoji">Die Standard-Emojis deines Geräts</string>
     <string name="caption_blobmoji">Die Blob–Emojis aus Android 4.4–7.1</string>
     <string name="caption_twemoji">Die Standard-Emojis von Mastodon</string>
+    <string name="caption_notoemoji">Googles aktuelle Emojis</string>
 
     <string name="download_failed">Download fehlgeschlagen.</string>
     <string name="profile_badge_bot_text">Bot</string>

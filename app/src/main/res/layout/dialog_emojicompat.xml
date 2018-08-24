@@ -18,6 +18,10 @@
         <include
             android:id="@+id/item_twemoji"
             layout="@layout/item_emoji_pref" />
+            
+        <include
+            android:id="@+id/item_notoemoji"
+            layout="@layout/item_emoji_pref" />
 
         <include
             android:id="@+id/item_nomoji"

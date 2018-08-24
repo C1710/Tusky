@@ -35,7 +35,8 @@ public class EmojiPreference extends DialogPreference {
     private static final int[] viewIds = {
             R.id.item_nomoji,
             R.id.item_blobmoji,
-            R.id.item_twemoji};
+            R.id.item_twemoji,
+            R.id.item_notoemoji};
 
     private ArrayList<RadioButton> radioButtons = new ArrayList<>();
 

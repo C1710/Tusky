@@ -57,12 +57,18 @@ public class EmojiCompatFont {
                     R.drawable.ic_twemoji,
                     "https://tuskyapp.github.io/hosted/emoji/TwemojiCompat.ttf"
             );
+    private static final EmojiCompatFont  NOTOEMOJI =
+            new EmojiCompatFont("Noto Emoji", 
+                    "Noto Emoji", 
+                    R.string.caption_notoemoji, 
+                    R.drawable.ic_notoemoji, 
+                    "https://android.googlesource.com/platform/external/noto-fonts/+/android-cts-9.0_r1/emoji-compat/font/NotoColorEmojiCompat.ttf?format=TEXT");
 
     /**
      * This array stores all available EmojiCompat fonts.
      * References to them can simply be saved by saving their indices
      */
-    public static final EmojiCompatFont[] FONTS = {SYSTEM_DEFAULT, BLOBMOJI, TWEMOJI};
+    public static final EmojiCompatFont[] FONTS = {SYSTEM_DEFAULT, BLOBMOJI, TWEMOJI, NOTOEMOJI};
 
     private EmojiCompatFont(String name,
                             String display,
