@@ -40,12 +40,7 @@
             android:defaultValue="false"
             android:dependency="mediaPreviewEnabled"
             android:key="alwaysShowSensitiveMedia"
-            android:title="@string/pref_title_alway_show_sensitive_media" />
-
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="loadFromTop"
-            android:title="@string/pref_load_toots_from_top" />
+            android:title="@string/pref_title_alway_show_sensitive_media" />i
 
     </PreferenceCategory>
 

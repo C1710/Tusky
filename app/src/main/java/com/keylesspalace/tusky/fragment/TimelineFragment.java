@@ -70,7 +70,6 @@ import com.keylesspalace.tusky.util.ViewDataUtils;
 import com.keylesspalace.tusky.view.EndlessOnScrollListener;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -140,7 +139,7 @@ public class TimelineFragment extends SFragment implements
     private Matcher filterRemoveRegexMatcher;
     private boolean hideFab;
     private boolean bottomLoading;
-    private final int[] scrolls = new int[128];
+    private final int[] scrolls = new int[256];
     private final Queue<Integer> scr = new LinkedBlockingQueue<>(5);
     private int lastScroll = 0;
 
@@ -246,8 +245,6 @@ public class TimelineFragment extends SFragment implements
 
     @Override
     public void onStop() {
-        // TODO: Delete
-        Log.d(TAG, "onStop: This is the scrolling stack: " + Arrays.toString(scrolls));
         super.onStop();
     }
 
@@ -313,6 +310,17 @@ public class TimelineFragment extends SFragment implements
                 lastScroll = (lastScroll + 1) % scrolls.length;
             }
         });
+
+        new Thread(() -> {
+            try {
+                while (true) {
+                    Thread.sleep(10000);
+                    Log.d(TAG, "is scrolling up: " + isScrollingUp());
+                }
+            } catch (InterruptedException e) {
+                Log.e(TAG, "setupScrollObserver: Interrupted!", e);
+            }
+        }).start();
     }
 
     private void deleteStatusById(String id) {
@@ -589,30 +597,55 @@ public class TimelineFragment extends SFragment implements
         }
     }
 
-    private static final float MEDIUM_WEIGHT = 0.6f, LOW_WEIGHT = 0.3f;
-    private static final float V_OLD = 0.3f, OLD = 0.5f, NEW = 0.9f;
+    // These are the weighing factors that are applied to
+    // Very old (low), old and new (medium) values
+    private static final float MEDIUM_WEIGHT = 0.8f, LOW_WEIGHT = 0.6f;
+    // Everything that's very old (very low significance), old (not so high significance),
+    // new (maybe scrolling in the opposite direction to go back to load more
+    private static final float V_OLD = 0.3f, OLD = 0.6f, NEW = 0.9f;
+    private static final int SCROLL_THRESHOLD = 42;
+    private static final float LARGER_THAN_THRESHOLD_FACTOR = 0.8f;
 
+    /**
+     * Determines whether the user is overall scrolling up or down.
+     * <p>
+     * It takes a look at the recent scrolling history, applies a really primitive weighing and
+     * calculates the overall scrolling distance.
+     * @return True if the user seems to be scrolling up, False if not.
+     */
     private boolean isScrollingUp() {
         int size = scrolls.length;
         int sum = 0;
-        int[] scrollData = new int[size];
-        // First of all let's assure that the scrolling events are sorted chronologically
+        int current;
         for (int i = 0; i < scrolls.length; i++) {
-            scrollData[i] = scrolls[(i + lastScroll) % size];
-            if(i <= size * V_OLD) {
-                scrollData[i] *= LOW_WEIGHT;
+            // First of all get the value itself
+            current = scrolls[(i + lastScroll) % size];
+            int sign = (int) Math.signum(current);
+            // Make it positive
+            current *= sign;
+            // Large values will be scaled down a bit.
+            if(current > SCROLL_THRESHOLD) {
+                current = (int) ((current - SCROLL_THRESHOLD) * LARGER_THAN_THRESHOLD_FACTOR)
+                        + SCROLL_THRESHOLD;
             }
-            if(i <= size * OLD) {
-                scrollData[i] *= MEDIUM_WEIGHT;
+            // Add the sign again
+            current *= sign;
+            if(i <= size * V_OLD) {
+                // Very old means very low significance
+                current *= LOW_WEIGHT;
+            }
+            if(i <= size * OLD && i > size * V_OLD) {
+                // Old means not so high significance
+                current *= MEDIUM_WEIGHT;
             }
             if(i > size * NEW) {
-                scrollData[i] *= MEDIUM_WEIGHT;
+                // New means not so high significance
+                current *= MEDIUM_WEIGHT;
             }
-
-            sum += scrollData[i];
+            sum += current;
         }
 
-        return sum > 0;
+        return sum < 0;
     }
 
     @Override
