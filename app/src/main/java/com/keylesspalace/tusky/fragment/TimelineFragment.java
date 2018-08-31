@@ -70,9 +70,12 @@ import com.keylesspalace.tusky.util.ViewDataUtils;
 import com.keylesspalace.tusky.view.EndlessOnScrollListener;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -137,6 +140,9 @@ public class TimelineFragment extends SFragment implements
     private Matcher filterRemoveRegexMatcher;
     private boolean hideFab;
     private boolean bottomLoading;
+    private final int[] scrolls = new int[128];
+    private final Queue<Integer> scr = new LinkedBlockingQueue<>(5);
+    private int lastScroll = 0;
 
     @Nullable
     private String bottomId = null;
@@ -221,11 +227,8 @@ public class TimelineFragment extends SFragment implements
         progressBar = rootView.findViewById(R.id.progress_bar);
         nothingMessageView = rootView.findViewById(R.id.nothing_message);
 
-        boolean loadMoreFromTop = PreferenceManager.getDefaultSharedPreferences(container.getContext())
-                .getBoolean("loadFromTop", false);
-
         setupSwipeRefreshLayout();
-        setupRecyclerView(loadMoreFromTop);
+        setupRecyclerView();
         updateAdapter();
         setupTimelinePreferences();
         setupNothingView();
@@ -239,6 +242,13 @@ public class TimelineFragment extends SFragment implements
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onStop() {
+        // TODO: Delete
+        Log.d(TAG, "onStop: This is the scrolling stack: " + Arrays.toString(scrolls));
+        super.onStop();
     }
 
     private void setupTimelinePreferences() {
@@ -275,11 +285,12 @@ public class TimelineFragment extends SFragment implements
                 android.R.attr.colorBackground));
     }
 
-    private void setupRecyclerView(boolean loadFromTop) {
+    private void setupRecyclerView() {
+        setupScrollObserver();
+
         Context context = recyclerView.getContext();
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(context);
-        layoutManager.setStackFromEnd(loadFromTop);
         recyclerView.setLayoutManager(layoutManager);
         DividerItemDecoration divider = new DividerItemDecoration(
                 context, layoutManager.getOrientation());
@@ -292,6 +303,16 @@ public class TimelineFragment extends SFragment implements
         ((SimpleItemAnimator) recyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
 
         recyclerView.setAdapter(adapter);
+    }
+
+    private void setupScrollObserver() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                scrolls[lastScroll] = dy;
+                lastScroll = (lastScroll + 1) % scrolls.length;
+            }
+        });
     }
 
     private void deleteStatusById(String id) {
@@ -546,6 +567,9 @@ public class TimelineFragment extends SFragment implements
 
     @Override
     public void onLoadMore(int position) {
+        // Determine the visual loading direction
+        layoutManager.setStackFromEnd(isScrollingUp());
+
         //check bounds before accessing list,
         if (statuses.size() >= position && position > 0) {
             Status fromStatus = statuses.get(position - 1).getAsRightOrNull();
@@ -563,6 +587,32 @@ public class TimelineFragment extends SFragment implements
         } else {
             Log.e(TAG, "error loading more");
         }
+    }
+
+    private static final float MEDIUM_WEIGHT = 0.6f, LOW_WEIGHT = 0.3f;
+    private static final float V_OLD = 0.3f, OLD = 0.5f, NEW = 0.9f;
+
+    private boolean isScrollingUp() {
+        int size = scrolls.length;
+        int sum = 0;
+        int[] scrollData = new int[size];
+        // First of all let's assure that the scrolling events are sorted chronologically
+        for (int i = 0; i < scrolls.length; i++) {
+            scrollData[i] = scrolls[(i + lastScroll) % size];
+            if(i <= size * V_OLD) {
+                scrollData[i] *= LOW_WEIGHT;
+            }
+            if(i <= size * OLD) {
+                scrollData[i] *= MEDIUM_WEIGHT;
+            }
+            if(i > size * NEW) {
+                scrollData[i] *= MEDIUM_WEIGHT;
+            }
+
+            sum += scrollData[i];
+        }
+
+        return sum > 0;
     }
 
     @Override
