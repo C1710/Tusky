@@ -225,6 +225,7 @@
     <string name="download_image">%1$s heruntergeladen</string>
     <string name="dialog_unfollow_warning">Willst du diesem Profil wirklich nicht mehr folgen?</string>
     <string name="pref_title_alway_show_sensitive_media">Heikle Inhalte immer anzeigen</string>
+    <string name="pref_load_toots_from_top">Lade zusätzliche Toots von oben</string>
     <string name="notification_channel_boost_name">Geteilte Beiträge</string>
     <string name="notification_channel_boost_description">Benachrichtigungen wenn deine Beiträge geteilt werden</string>
     <string name="notification_channel_favourite_description">Benachrichtigungen wenn deine Beiträge favorisiert werden</string>

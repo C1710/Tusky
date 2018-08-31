@@ -221,8 +221,11 @@ public class TimelineFragment extends SFragment implements
         progressBar = rootView.findViewById(R.id.progress_bar);
         nothingMessageView = rootView.findViewById(R.id.nothing_message);
 
+        boolean loadMoreFromTop = PreferenceManager.getDefaultSharedPreferences(container.getContext())
+                .getBoolean("loadFromTop", false);
+
         setupSwipeRefreshLayout();
-        setupRecyclerView();
+        setupRecyclerView(loadMoreFromTop);
         updateAdapter();
         setupTimelinePreferences();
         setupNothingView();
@@ -272,10 +275,11 @@ public class TimelineFragment extends SFragment implements
                 android.R.attr.colorBackground));
     }
 
-    private void setupRecyclerView() {
+    private void setupRecyclerView(boolean loadFromTop) {
         Context context = recyclerView.getContext();
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(context);
+        layoutManager.setStackFromEnd(loadFromTop);
         recyclerView.setLayoutManager(layoutManager);
         DividerItemDecoration divider = new DividerItemDecoration(
                 context, layoutManager.getOrientation());

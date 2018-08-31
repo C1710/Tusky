@@ -77,9 +77,9 @@ public class EmojiPreference extends DialogPreference {
         TextView title       = container.findViewById(R.id.emojicompat_name);
         TextView caption     = container.findViewById(R.id.emojicompat_caption);
         ImageView thumb      = container.findViewById(R.id.emojicompat_thumb);
-        ImageButton download      = container.findViewById(R.id.emojicompat_download);
+        ImageButton download = container.findViewById(R.id.emojicompat_download);
 
-        ImageButton cancel        = container.findViewById(R.id.emojicompat_download_cancel);
+        ImageButton cancel   = container.findViewById(R.id.emojicompat_download_cancel);
 
         RadioButton radio    = container.findViewById(R.id.emojicompat_radio);
 
@@ -150,7 +150,7 @@ public class EmojiPreference extends DialogPreference {
     }
 
     private void cancelDownload(EmojiCompatFont font, View container) {
-        font.cancelDownload();
+        font.cancelDownload(context);
         updateItem(font, container);
     }
 

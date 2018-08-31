@@ -58,11 +58,13 @@ public class EmojiCompatFont {
                     "https://tuskyapp.github.io/hosted/emoji/TwemojiCompat.ttf"
             );
     private static final EmojiCompatFont  NOTOEMOJI =
-            new EmojiCompatFont("Noto Emoji", 
+            new EmojiCompatFont("NotoEmoji",
                     "Noto Emoji", 
                     R.string.caption_notoemoji, 
-                    R.drawable.ic_notoemoji, 
-                    "https://android.googlesource.com/platform/external/noto-fonts/+/android-cts-9.0_r1/emoji-compat/font/NotoColorEmojiCompat.ttf?format=TEXT");
+                    R.drawable.ic_notoemoji,
+                    // FIXME
+                    "https://tuskyapp.github.io/hosted/emoji/TwemojiCompat.ttf"
+            );
 
     /**
      * This array stores all available EmojiCompat fonts.
@@ -167,10 +169,13 @@ public class EmojiCompatFont {
     /**
      * Stops downloading the font. If no one started a font download, nothing happens.
      */
-    public void cancelDownload() {
+    public void cancelDownload(Context context) {
         if(fontDownloader != null) {
             fontDownloader.cancel(false);
             fontDownloader = null;
+            if(isDownloaded(context)) {
+                getFont(context).delete();
+            }
         }
     }
 
